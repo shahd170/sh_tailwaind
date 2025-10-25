@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <link rel="icon" href="./assets/clipboard-solid (4).svg"> -->
+    <title>TODOs List</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+      #todoList {
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      #todoList::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+    </style>
+  </head>
+  <body class="bg-[#8FB8D6] min-h-screen flex items-center justify-center p-4">
+    <div
+      class="bg-black shadow-xl rounded-2xl w-full max-w-[100%] md:max-w-[45%] p-6"
+    >
+      <div
+        class="w-[100%] h-[50px] border-b-2 border-white flex items-center justify-between gap-10 px-2"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 384 512"
+          class="fill-white w-[25px]"
+        >
+          <!--!Font Awesome Free v5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+          <path
+            d="M384 112v352c0 26.51-21.49 48-48 48H48c-26.51 0-48-21.49-48-48V112c0-26.51 21.49-48 48-48h80c0-35.29 28.71-64 64-64s64 28.71 64 64h80c26.51 0 48 21.49 48 48zM192 40c-13.255 0-24 10.745-24 24s10.745 24 24 24 24-10.745 24-24-10.745-24-24-24m96 114v-20a6 6 0 0 0-6-6H102a6 6 0 0 0-6 6v20a6 6 0 0 0 6 6h180a6 6 0 0 0 6-6z"
+          />
+        </svg>
+        <h2 class="text-white">shahd khalil</h2>
+      </div>
+      <h1 class="text-white text-center py-5 text-xl">TODOs List</h1>
+      <!-- Todo List -->
+      <ul id="todoList" class="space-y-2 max-h-[450px] cursor-pointer">
+        <!-- Items will appear here -->
+      </ul>
+      <div class="flex gap-1 md:gap-2 my-4 items-center sticky-bottom">
+        <input
+          id="newTodoInput"
+          type="text"
+          placeholder="Add a new todo..."
+          class="flex-grow border border-b-2 border-white text-white rounded-lg p-2 focus:outline-none focus:border-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          id="addTodoBtn"
+          class="bg-white hover:bg-[#CEECFF] text-black px-4 py-2 rounded-lg cursor-pointer"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "https://dummyjson.com/todos";
+      const todoListEl = document.getElementById("todoList");
+      const inputEl = document.getElementById("newTodoInput");
+      const addBtn = document.getElementById("addTodoBtn");
+      let todos = [];
+      // Fetch initial todos from API
+      async function getTodos() {
+        try {
+          const res = await fetch(API_URL);
+          const data = await res.json();
+          if (res.ok && data != null) {
+            todos = data.todos;
+            console.log("data", data);
+            renderTodos();
+          }
+        } catch (error) {
+          console.error("Error fetching todos:", error);
+        }
+      }
+
+      // Render todos in DOM
+      console.log("todos", todos);
+
+      function renderTodos() {
+        if (todos != null && todos.length > 0) {
+          todoListEl.innerHTML = "";
+          todos.forEach((todo) => {
+            const li = document.createElement("li");
+            li.className =
+              "flex justify-between items-center bg-[#CEECFF] p-3 rounded-lg shadow-sm hover:bg-white transition font-bold text-sm ";
+            li.innerHTML = `
+            <div class="flex items-center gap-2 ">
+                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" data-id="${
+                     todo.id
+                   }"  class=" deleteTodo w-5 hover:fill-red-700 cursor-pointer " >
+                <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z"/></svg>
+             
+              <span class="text-gray-700 ${
+                todo.completed ? "line-through " : ""
+              }">${todo.todo}</span>
+            </div>
+             <input type="checkbox" ${
+               todo.completed ? "checked" : ""
+             } class="w-4 h-4 accent-green-500 toggleTodo cursor-pointer" data-id="${
+              todo.id
+            }" />
+          `;
+            todoListEl.appendChild(li);
+          });
+        } else {
+          alert("No todos received from server");
+        }
+      }
+
+      //  Add new todo
+      async function addTodo() {
+        try {
+          const text = inputEl.value.trim();
+          if (!text) return alert("Please enter a todo!");
+          const newTodo = {
+            id: Date.now(),
+            userId: 90,
+            todo: text,
+            completed: false,
+          };
+          // Simulate API POST
+          const re = await fetch(API_URL + "/add", {
+            method: "POST",
+            body: JSON.stringify(newTodo),
+            headers: { "Content-Type": "application/json" },
+          });
+          const data = await re.json();
+          console.log("Added todo:", data);
+          todos.unshift(newTodo);
+          renderTodos();
+          inputEl.value = "";
+        } catch (error) {
+          console.error("Error adding todo:", error);
+          
+        }
+      }
+
+      //  Delete todo
+      async function deleteTodo(id) {
+        try {
+          await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+          todos = todos.filter((t) => t.id != id);
+          renderTodos();
+        } catch (error) {
+          console.error("Error deleting todo:", error);
+        }
+      }
+
+      //  Toggle complete/uncomplete
+      function toggleTodo(id) {
+        todos = todos.map((t) =>
+          t.id == id ? { ...t, completed: !t.completed } : t
+        );
+        renderTodos();
+      }
+
+      // Event Listeners
+      addBtn.addEventListener("click", addTodo);
+      todoListEl.addEventListener("click", (e) => {
+        const deleteIcon = e.target.closest(".deleteTodo");
+        const toggleBox = e.target.closest(".toggleTodo");
+        if (deleteIcon) deleteTodo(deleteIcon.dataset.id);
+        if (toggleBox) toggleTodo(toggleBox.dataset.id);
+      });
+
+      async function init() {
+        //api
+        await getTodos();
+        //render todos in dom
+        renderTodos();
+      }
+      //start app
+      init();
+    </script>
+  </body>
